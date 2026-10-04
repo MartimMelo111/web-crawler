@@ -186,9 +186,6 @@ I wrote and tested the project in **PyCharm 2026.2.3** (build 262.10968.92) on W
   the prompt, and [ble.sh](https://github.com/akinomyoga/ble.sh), which suggests commands from
   history as I type. The project's virtual environment is activated automatically in each new
   terminal tab.
-- **Checks outside the IDE.** Formatting, linting and type checking don't depend on PyCharm:
-  they run as `uv run` commands, through the pre-commit hooks, and in CI. Anyone can work on the
-  project with a different editor and get exactly the same results.
 
 ### Getting familiar with the subject
 
