@@ -5,13 +5,14 @@ every page reachable on that hostname. For each page it prints the page's URL an
 found on it.
 
 ```
-$ webcrawler https://books.toscrape.com -n 300
-https://books.toscrape.com/
-  -> https://books.toscrape.com/index.html
-  -> https://books.toscrape.com/catalogue/category/books_1/index.html
-  -> https://books.toscrape.com/catalogue/category/books/travel_2/index.html
-  ...
-crawled 300 pages, 0 redirects, 0 skipped, 0 errors in 2.45s
+$ webcrawler https://example.com
+https://example.com/
+  -> https://example.com/about
+  -> https://www.iana.org/domains/example
+https://example.com/about
+  -> https://example.com/
+crawled 2 pages, 0 redirects, 0 skipped, 0 errors in 0.31s
+results written to results/example.com_2026-10-04_15-02-11.jsonl
 ```
 
 ## Quick start
@@ -456,21 +457,21 @@ at scale:
    hosts, or a rule such as "registrable domain via the Public Suffix List" if subdomains should
    count.
 2. **Many machines.** One event loop eventually runs out of bandwidth or CPU. The URL queue moves
-   into a shared queue (Redis Streams, SQS, Kafka) and the seen-set into a shared store (Redis
-   set, or a Bloom filter for memory). URLs are **partitioned by host** (consistent hashing) so
+   into a shared queue such as SQS, and the seen-set into a shared store. URLs are **partitioned by host** (consistent hashing) so
    each host is owned by exactly one worker, which keeps per-host politeness simple and correct.
    Workers are stateless and scale horizontally.
 3. **A service instead of a CLI.** A CLI suits one-off, interactive, single-site runs. For many
    domains, the needs are different: long-running jobs that outlive a terminal session,
    scheduling and recurring crawls, progress tracking, cancellation, retries across restarts,
    results stored for querying instead of printed, and multiple users. That points to:
-   - an **HTTP API** (e.g. FastAPI): `POST /crawls` returns a job ID, then
-     `GET /crawls/{id}` for status and `GET /crawls/{id}/pages` for paginated results;
-   - a **job queue / workflow engine** (Celery, Arq, or Temporal for durable multi-step jobs)
-     running the workers;
-   - a **database** for results (Postgres for the page→link graph, or object storage plus a
-     columnar format such as Parquet for large crawls);
-   - optionally a small **web dashboard** on top of the API for watching and managing crawls.
+   - an **HTTP API** (e.g. API Gateway in front of a FastAPI service): `POST /crawls` returns a
+     job ID, then `GET /crawls/{id}` for status and `GET /crawls/{id}/pages` for paginated
+     results;
+   - a **job queue / workflow engine** running the workers: SQS with the crawler running as
+     containers on ECS Fargate, and AWS Step Functions for durable multi-step jobs (fetch
+     robots.txt, crawl, store results, notify);
+   - a **database** for results: RDS for PostgreSQL for the page→link graph, or S3 with a
+     columnar format such as Parquet for large crawls, queried with Athena.
 
    The CLI would still be useful as a thin client of that API, or for local single-site runs,
    with both sharing the same engine package.
