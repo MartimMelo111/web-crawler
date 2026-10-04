@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+.venv/
+dist/
+
+# Tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+
+# IDEs
+.idea/
+.vscode/
+
+# Crawl results (written by every run)
+results/
