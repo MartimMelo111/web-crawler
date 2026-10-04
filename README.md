@@ -150,6 +150,8 @@ The repo is set up the way I would set up a project a team maintains, not a one-
   - The lint job and the test job run separately, so a formatting problem and a failing test
     show up as separate failures.
   - Tests run on Linux, Windows and macOS.
+  - A final `ci-passed` job succeeds only if every other job did, so branch protection needs
+    just that one required check, however the test matrix changes.
   - A new push to a PR cancels the run for the previous commit.
   - The workflow only has read access to the repo.
 - **Pre-commit hooks** (`.pre-commit-config.yaml`) run the same format, lint and type checks
