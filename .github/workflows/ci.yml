@@ -38,11 +38,29 @@ jobs:
       - run: uv sync --locked
       - run: uv run pytest --cov --cov-report=term --cov-fail-under=100
 
+  # Install the built wheel, not the source tree, to catch packaging mistakes.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv build
+      - name: Check that tests are not shipped in the wheel
+        run: |
+          if unzip -l dist/*.whl | grep -E '_test\.py|conftest\.py|/testing/'; then
+            echo "test files found in the wheel" && exit 1
+          fi
+      - name: Install the wheel in a clean environment and run the CLI
+        run: |
+          uv venv /tmp/wheel-env
+          uv pip install --python /tmp/wheel-env dist/*.whl
+          /tmp/wheel-env/bin/webcrawler --help
+
   ci-passed:
     if: always()
-    needs: [lint, test]
+    needs: [lint, test, build]
     runs-on: ubuntu-latest
     steps:
       - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: exit 1
-      - run: echo "lint and all test jobs passed"
+      - run: echo "lint, test and build jobs passed"

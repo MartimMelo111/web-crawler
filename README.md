@@ -150,6 +150,9 @@ The repo is set up the way I would set up a project a team maintains, not a one-
   - The lint job and the test job run separately, so a formatting problem and a failing test
     show up as separate failures.
   - Tests run on Linux, Windows and macOS.
+  - A build job builds the wheel, checks that no test code is shipped in it, installs it in a
+    clean environment and runs `webcrawler --help`. This catches packaging mistakes that tests
+    run from the source tree would miss.
   - A final `ci-passed` job succeeds only if every other job did, so branch protection needs
     just that one required check, however the test matrix changes.
   - A new push to a PR cancels the run for the previous commit.
@@ -157,6 +160,10 @@ The repo is set up the way I would set up a project a team maintains, not a one-
 - **Pre-commit hooks** (`.pre-commit-config.yaml`) run the same format, lint and type checks
   before each commit, so most problems are caught before CI. Install them with
   `uv run --with pre-commit pre-commit install`.
+- **Dependabot** (`.github/dependabot.yml`) checks weekly for updates to the locked Python
+  dependencies and to the GitHub Actions the workflow uses, and opens a PR for each update. Dev
+  tool updates are grouped into one PR. CI runs on every one of these PRs, so an update is only
+  merged once it passes.
 
 ---
 
